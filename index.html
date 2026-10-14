@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ehrlich zu zweit</title>
+<meta name="theme-color" content="#1b1226">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ehrlich">
+<link rel="apple-touch-icon" id="touchIcon" href="">
+<link rel="manifest" id="manifestLink" href="">
+<style>
+:root{
+  --bg1:#1b1226; --bg2:#3a1b3f; --card:#ffffff14; --line:#ffffff26;
+  --txt:#fbf4f1; --mute:#cdb9c6; --acc:#ff7a8a; --acc2:#ffb36b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg1);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg1) 70%) fixed;
+  min-height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right))
+          max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(12px,2.5vh,20px)}
+header{text-align:center;padding-top:4px}
+h1{margin:0;font-size:clamp(1.4rem,6vw,1.9rem);letter-spacing:.02em;font-weight:700}
+h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:4px 0 0;color:var(--mute);font-size:clamp(.8rem,3.4vw,.95rem)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--txt);
+  padding:8px 14px;border-radius:999px;font-size:.88rem;cursor:pointer}
+.chip.on{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#2a1020;border-color:transparent;font-weight:600}
+.turn{text-align:center;font-size:.95rem;color:var(--mute);min-height:1.3em}
+.turn b{color:var(--acc2)}
+.card{position:relative;border:1px solid var(--line);background:var(--card);backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);border-radius:26px;padding:clamp(22px,5vw,34px);
+  min-height:clamp(240px,38vh,360px);display:flex;flex-direction:column;justify-content:center;
+  box-shadow:0 18px 50px #0006}
+.cat{font-size:.75rem;text-transform:uppercase;letter-spacing:.14em;color:var(--acc);margin-bottom:14px;font-weight:700}
+.q{font-size:clamp(1.25rem,5.6vw,1.75rem);line-height:1.35;font-weight:600;margin:0;
+  overflow-wrap:anywhere;hyphens:auto}
+.q.pop{animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.fav{position:absolute;top:12px;right:14px;background:none;border:0;color:var(--mute);font-size:1.6rem;cursor:pointer;padding:6px}
+.fav.on{color:var(--acc)}
+.btn{width:100%;border:0;border-radius:20px;padding:clamp(16px,2.4vh,20px);font-size:clamp(1.05rem,4.6vw,1.25rem);
+  font-weight:700;color:#2a1020;cursor:pointer;background:linear-gradient(90deg,var(--acc),var(--acc2));
+  box-shadow:0 10px 28px #ff7a8a44}
+.btn:active{transform:scale(.98)}
+.row{display:flex;gap:10px}
+.ghost{flex:1;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:16px;
+  padding:13px;font-size:.95rem;cursor:pointer}
+.meta{text-align:center;color:var(--mute);font-size:.8rem}
+details{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:4px 16px}
+summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"＋";float:right;color:var(--mute)}
+details[open] summary::after{content:"－"}
+.list{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:10px}
+.list li{padding:12px 14px;border-radius:14px;background:#ffffff0d;font-size:.95rem;line-height:1.4}
+.list small{display:block;color:var(--acc);margin-bottom:3px;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
+label{display:block;font-size:.85rem;color:var(--mute);margin:10px 0 6px}
+input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
+  background:#0003;color:var(--txt);font-size:1rem}
+.hint{font-size:.82rem;color:var(--mute);line-height:1.5;padding-bottom:12px}
+.empty{color:var(--mute);font-size:.9rem;padding-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ehrlich <span>zu zweit</span></h1>
+    <p class="sub">Tiefe Fragen für Paare – stellt sie euch gegenseitig, hört wirklich zu.</p>
+  </header>
+
+  <div class="chips" id="chips"></div>
+  <div class="turn" id="turn"></div>
+
+  <div class="card">
+    <button class="fav" id="fav" aria-label="Als Favorit merken">♡</button>
+    <div class="cat" id="cat">Bereit?</div>
+    <p class="q" id="q">Tippt auf „Neue Frage“. Eine*r liest vor, der*die andere antwortet ehrlich – dann wird gewechselt.</p>
+  </div>
+
+  <button class="btn" id="next">Neue Frage</button>
+  <div class="row">
+    <button class="ghost" id="back">← Zurück</button>
+    <button class="ghost" id="skip">Überspringen</button>
+  </div>
+  <div class="meta" id="meta"></div>
+
+  <details>
+    <summary>So spielt ihr</summary>
+    <div class="hint">
+      1. Beide öffnen die App auf dem eigenen Handy.<br>
+      2. Wer dran ist, tippt auf „Neue Frage“ und liest sie laut vor.<br>
+      3. Der*die andere antwortet ehrlich – ohne Unterbrechen, ohne Bewerten.<br>
+      4. Danach darf die fragende Person die Frage auch selbst beantworten.<br>
+      5. Wechselt euch ab. Jede Frage kommt erst wieder, wenn alle durch sind.<br>
+      Eine Frage ist zu viel? „Überspringen“ ist jederzeit okay.
+    </div>
+  </details>
+
+  <details>
+    <summary>Favoriten <span id="favCount" style="color:var(--mute);font-weight:400"></span></summary>
+    <ul class="list" id="favList"></ul>
+  </details>
+
+  <details>
+    <summary>Einstellungen</summary>
+    <label for="n1">Name 1 (optional)</label>
+    <input type="text" id="n1" maxlength="20" autocomplete="off">
+    <label for="n2">Name 2 (optional)</label>
+    <input type="text" id="n2" maxlength="20" autocomplete="off">
+    <div class="hint" style="margin-top:10px">Mit Namen zeigt die App an, wer gerade fragt. Gemerkt wird alles nur lokal auf diesem Gerät.</div>
+    <button class="ghost" id="reset" style="width:100%;margin-bottom:12px">Fragen-Stapel neu mischen</button>
+  </details>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Fragen (Originalformulierungen) ---------- */
+var DATA = {
+  "Nähe & Gefühle": [
+    "Wann habe ich dir zuletzt das Gefühl gegeben, wirklich gesehen zu werden?",
+    "Was brauchst du gerade am meisten von mir, traust dich aber kaum zu sagen?",
+    "In welchem Moment mit mir hast du dich zuletzt richtig geborgen gefühlt?",
+    "Welche Geste von mir lässt dein Herz sofort weich werden?",
+    "Gibt es etwas, wofür du dir mehr Zärtlichkeit von mir wünschst?",
+    "Wann fühlst du dich mir am nächsten – und wann am fernsten?",
+    "Was würdest du mir sagen, wenn du sicher wüsstest, dass ich nicht verletzt reagiere?",
+    "Welches Gefühl trägst du in letzter Zeit mit dir herum, ohne darüber zu reden?",
+    "Wie zeige ich dir meine Liebe – und kommt sie so bei dir an, wie ich sie meine?",
+    "Wann hast du zuletzt vor mir geweint, und hättest du dir dabei etwas anderes von mir gewünscht?",
+    "Was an mir beruhigt dich, wenn alles andere laut ist?",
+    "Wovor hast du in unserer Beziehung am meisten Respekt?",
+    "Wann hast du dich zuletzt von mir missverstanden gefühlt?",
+    "Welche Worte von mir würdest du gern öfter hören?",
+    "Was ist ein kleiner Alltagsmoment mit mir, den du nie vergessen möchtest?"
+  ],
+  "Vertrauen": [
+    "Gibt es etwas, das du mir bisher nicht erzählt hast, weil der richtige Moment fehlte?",
+    "Wobei fällt es dir schwer, mir ganz zu vertrauen – und woher könnte das kommen?",
+    "Wann hast du dich zuletzt bei mir sicher genug gefühlt, schwach zu sein?",
+    "Was müsste ich tun, damit du mir noch mehr vertraust?",
+    "Welches Geheimnis von dir wäre dir mit mir am schwersten auszusprechen?",
+    "Gibt es etwas, das du an mir bewunderst, aber noch nie gesagt hast?",
+    "Hast du dich schon einmal verstellt, um mir zu gefallen? Wann?",
+    "Welche Grenze von dir wünschst du dir, dass ich sie besser kenne?",
+    "Worin muss ich dir manchmal ein Stück mehr Freiraum lassen?",
+    "Was wäre für dich ein Vertrauensbruch, über den wir nie gesprochen haben?",
+    "Wann war ich für dich verlässlich, als du es am meisten gebraucht hast?",
+    "Gibt es etwas, bei dem du dir wünschst, ich würde dir mehr zutrauen?"
+  ],
+  "Erinnerungen": [
+    "Was war dein erster Gedanke, als du mich zum ersten Mal wirklich wahrgenommen hast?",
+    "Welcher Moment in unserer Geschichte hat uns am meisten verändert?",
+    "Woran denkst du zurück, wenn du dich in mich neu verlieben möchtest?",
+    "Was war die schönste Überraschung, die ich dir je gemacht habe?",
+    "Welche schwere Zeit haben wir gemeinsam durchgestanden, auf die du stolz bist?",
+    "Wann habe ich dich zuletzt richtig zum Lachen gebracht?",
+    "Welchen Ort verbindest du am stärksten mit uns beiden?",
+    "Was würdest du an unserem Anfang gern noch einmal erleben?",
+    "Welcher Satz von mir ist dir im Gedächtnis geblieben?",
+    "Gab es einen Moment, in dem du gemerkt hast: Mit dir möchte ich bleiben?",
+    "Was haben wir früher mehr getan, das du heute vermisst?",
+    "Welches gemeinsame Erlebnis hat dich am meisten überrascht?"
+  ],
+  "Zukunft & Träume": [
+    "Wie sieht für dich ein perfekter gemeinsamer Alltag in zehn Jahren aus?",
+    "Welchen Traum hast du, den du noch niemandem erzählt hast?",
+    "Was würdest du mit mir wagen, wenn Geld und Angst keine Rolle spielten?",
+    "Wovor hast du Angst, wenn du an unsere Zukunft denkst?",
+    "Was möchtest du mit mir noch unbedingt erleben, bevor wir alt sind?",
+    "Wie möchtest du, dass wir miteinander alt werden?",
+    "Welche Tradition würdest du gern mit mir ganz neu erfinden?",
+    "Was wünschst du dir für uns, das wir bisher nicht ausgesprochen haben?",
+    "Welche Rolle soll Familie in unserem Leben spielen?",
+    "Woran würdest du merken, dass wir auf dem richtigen Weg sind?",
+    "Welchen Ort der Welt möchtest du zuerst mit mir gemeinsam entdecken?",
+    "Was soll in zwanzig Jahren über unsere Beziehung gesagt werden?"
+  ],
+  "Intimität & Nähe": [
+    "Wann fühlst du dich körperlich zu mir am stärksten hingezogen?",
+    "Was wünschst du dir mehr: Zeit, Berührung, Aufmerksamkeit oder Worte?",
+    "Gibt es etwas in unserer Zweisamkeit, das du gern einmal offen besprechen würdest?",
+    "Wie fühlst du dich nach einem Tag, an dem wir uns ganz nah waren?",
+    "Welche Berührung von mir tut dir am meisten gut?",
+    "Was macht für dich einen wirklich innigen Abend aus?",
+    "Fühlst du dich in unserer Intimität frei genug, deine Wünsche zu sagen?",
+    "Was könnte ich tun, damit du dich begehrenswerter fühlst?",
+    "Wann fehlt dir die Leichtigkeit zwischen uns, und was würde sie zurückbringen?",
+    "Welche kleine Geste vor dem Einschlafen würde dir viel bedeuten?"
+  ],
+  "Konflikte & Wachstum": [
+    "Was war in unserem letzten Streit eigentlich dein wahres Bedürfnis?",
+    "Was tue ich, wenn wir streiten, das dich besonders verletzt?",
+    "Wofür möchtest du dich bei mir entschuldigen, hast es aber noch nicht getan?",
+    "Was fällt dir schwer, mir zu verzeihen?",
+    "Wie kann ich dir in einer Auseinandersetzung besser zuhören?",
+    "Wann ziehst du dich zurück, statt mit mir zu reden – und was bräuchtest du dann?",
+    "Welche Eigenschaft von mir fordert dich manchmal heraus, und was lernst du daraus?",
+    "Woran arbeitest du gerade an dir selbst, und wie kann ich dich dabei unterstützen?",
+    "Welches Thema vermeiden wir, weil es unbequem ist?",
+    "Was würdest du gern an unserer Art zu streiten verändern?",
+    "In welcher Situation habe ich dich zuletzt enttäuscht, ohne es zu merken?",
+    "Was brauchst du, damit nach einem Streit wieder alles gut ist?"
+  ],
+  "Dankbarkeit": [
+    "Wofür bist du mir in dieser Woche dankbar?",
+    "Was an unserer Beziehung hält dich an schlechten Tagen aufrecht?",
+    "Welche Eigenschaft von mir hat dein Leben besser gemacht?",
+    "Was hast du durch mich über dich selbst gelernt?",
+    "Welches kleine Ritual von uns würdest du niemals aufgeben?",
+    "Wann hast du zuletzt gedacht: Ich habe wirklich Glück mit dir?",
+    "Was tue ich, ohne es zu merken, das dir viel bedeutet?",
+    "Welchen Satz wolltest du mir schon lange sagen?",
+    "Was macht dich an uns beiden stolz?",
+    "Wie hat sich deine Liebe zu mir über die Zeit verändert?"
+  ],
+  "Mut & Tiefe": [
+    "Was ist deine größte Angst, mich eines Tages zu verlieren?",
+    "Wovor hast du Angst, was du mir nicht zeigen willst?",
+    "Wann hast du dich in unserer Beziehung zuletzt ungenügend gefühlt?",
+    "Welche Wunde aus deiner Vergangenheit spüre ich manchmal zwischen uns?",
+    "Was glaubst du, was ich an dir nicht verstehe?",
+    "Was wäre, wenn du mir völlig offen sagen dürftest, was dich gerade bewegt?",
+    "Welche Seite von dir zeigst du nur wenigen Menschen?",
+    "Was hast du als Kind gebraucht, das dir gefehlt hat – und wie wirkt es heute?",
+    "Wann fühlst du dich einsam, auch wenn ich neben dir bin?",
+    "Was bedeutet für dich Liebe, wenn sie nicht mehr aufregend, sondern vertraut ist?",
+    "Gibt es etwas, das du an dir selbst nicht lieben kannst – und würdest du es mir zeigen?",
+    "Wenn wir nur noch ein Jahr hätten: Was würdest du mir unbedingt noch sagen?"
+  ]
+};
+
+/* ---------- Erweiterung: mehr Fragen in bestehenden Themen ---------- */
+function more(cat, arr){ DATA[cat] = (DATA[cat]||[]).concat(arr); }
+
+more("Nähe & Gefühle", [
+  "Wann hast du zuletzt gedacht: Ich wünschte, er/sie würde mich jetzt einfach in den Arm nehmen?",
+  "Welche Stimmung von mir spürst du sofort, noch bevor ich etwas sage?",
+  "Was tut dir an manchen Tagen weh, ohne dass ich es mitbekomme?",
+  "Wie fühlt es sich für dich an, wenn ich dich nach einem langen Tag begrüße?",
+  "Gibt es eine Situation, in der du dir mehr Unterstützung von mir gewünscht hättest?",
+  "Was ist das Zärtlichste, das jemals jemand für dich getan hat – und wie war es bei mir?",
+  "Wann bist du zuletzt stolz auf mich gewesen, ohne es zu sagen?",
+  "Welches Gefühl überfordert dich am meisten, wenn es um uns geht?",
+  "Wie kann ich dir zeigen, dass du mir wichtig bist, wenn ich gerade gestresst bin?",
+  "Worüber freust du dich bei uns am meisten, wenn du morgens aufwachst?",
+  "Fühlst du dich von mir getröstet, wenn es dir schlecht geht – oder eher beraten?",
+  "Was löst Eifersucht in dir aus, und wie gehst du damit um?"
+]);
+more("Vertrauen", [
+  "Wann hast du dich zuletzt gefragt, ob ich dich wirklich verstehe?",
+  "Was hast du aus Rücksicht auf mich schon einmal verschwiegen?",
+  "Wie gehst du damit um, wenn ich etwas vor dir verberge – auch wenn es nur eine Kleinigkeit ist?",
+  "Welche Entscheidung möchtest du nicht allein treffen müssen?",
+  "Was bedeutet für dich Ehrlichkeit, und wo fällt sie dir schwer?",
+  "Wann war ich dir gegenüber zu hart oder zu kritisch?",
+  "Gibt es einen Menschen, bei dem du dich freier fühlst als bei mir – und warum?",
+  "Wie viel Nähe ist dir genug, wie viel zu viel?",
+  "Wer darf alles über unsere Beziehung Bescheid wissen, und wer sollte besser nicht?",
+  "Was würdest du dir wünschen, dass ich in einer Krise für dich tue?"
+]);
+more("Erinnerungen", [
+  "Welcher Tag mit mir war für dich ein Geschenk, ohne dass etwas Besonderes passiert ist?",
+  "Was war das Peinlichste, das wir gemeinsam erlebt haben, und musst du heute darüber lachen?",
+  "Welches Lied, welcher Duft oder welcher Ort bringt dich sofort zu uns?",
+  "Wie war dein Gefühl vor unserem ersten Kuss?",
+  "Wann hast du gemerkt, dass ich mehr als ein Freund/eine Freundin für dich bin?",
+  "Welches gemeinsame Foto ist dein liebstes, und warum?",
+  "Was habe ich gesagt oder getan, das dich zum ersten Mal wirklich berührt hat?",
+  "Welche Kleinigkeit aus der Anfangszeit hat dich besonders zum Schmunzeln gebracht?",
+  "Wann haben wir uns zuletzt wie am Anfang gefühlt?",
+  "Wofür bist du aus unserer gemeinsamen Zeit besonders dankbar?",
+  "Gab es einen Moment, in dem du fast aufgegeben hättest, und was hat dich gehalten?"
+]);
+more("Zukunft & Träume", [
+  "Welches Abenteuer wünschst du dir von uns, das uns beide aus der Komfortzone holt?",
+  "Wo möchtest du am liebsten leben, wenn wir völlig frei wählen könnten?",
+  "Was soll sich in unserem gemeinsamen Alltag in den nächsten Jahren ändern?",
+  "Welche Rolle sollen Kinder, Haustiere oder andere Lebewesen in unserem Leben spielen?",
+  "Was wünschst du dir von mir für deinen beruflichen Weg?",
+  "Was würdest du bereuen, wenn wir es nie ausprobiert hätten?",
+  "Wie sieht für dich ein richtig guter Sonntag in zwanzig Jahren aus?",
+  "Welche Version von uns beiden wäre für dich ein Traum?",
+  "Was bedeutet Sicherheit für dich, wenn du an unsere Zukunft denkst?",
+  "Wovon sollten wir uns gemeinsam verabschieden, um freier zu sein?"
+]);
+more("Intimität & Nähe", [
+  "Wann fühlst du dich bei mir am verführerischsten?",
+  "Wie wichtig ist dir Körperkontakt im Alltag, auch ohne Hintergedanken?",
+  "Gibt es etwas, das du dich noch nicht getraut hast, mir zu sagen oder zu zeigen?",
+  "Welche Art von Nähe brauchst du, wenn du erschöpft bist?",
+  "Was möchtest du an unseren gemeinsamen Abenden öfter erleben?",
+  "Wie zeigst du mir, dass du mich begehrst, und erkenne ich es?",
+  "Wann hat dich ein Blick von mir zuletzt aus der Fassung gebracht?",
+  "Welches Kompliment von mir würdest du gern häufiger hören?",
+  "Was bedeutet Zärtlichkeit für dich im Unterschied zu Leidenschaft?",
+  "Wie fühlt es sich an, wenn ich dich im Alltag spontan berühre?"
+]);
+more("Konflikte & Wachstum", [
+  "Wann habe ich dir zuletzt nicht richtig zugehört?",
+  "Welche Muster wiederholen sich bei uns, die wir gemeinsam durchbrechen könnten?",
+  "Was ist ein Satz, den du in einem Streit nie wieder hören möchtest?",
+  "Wie können wir lernen, Pausen im Streit zu machen, ohne uns allein zu lassen?",
+  "Was wünschst du dir von mir, wenn du wütend bist?",
+  "Welche Verantwortung möchtest du in unserer Beziehung gern mit mir teilen?",
+  "Wann habe ich dich zuletzt gekränkt, ohne dass wir darüber gesprochen haben?",
+  "Welche meiner Gewohnheiten wirkt auf dich belastend, und wie sagst du es mir am besten?",
+  "Was hat uns als Paar durch Krisen stärker gemacht?",
+  "Was können wir von anderen Paaren lernen, und was wollen wir bewusst anders machen?"
+]);
+more("Dankbarkeit", [
+  "Wofür möchtest du mir heute einfach einmal Danke sagen?",
+  "Welche meiner Eigenschaften macht deinen Alltag leichter?",
+  "Was würdest du an mir niemals verändern wollen?",
+  "Wann hat dir eine Kleinigkeit von mir den ganzen Tag gerettet?",
+  "Was habe ich für dich getan, das du erst viel später wirklich zu schätzen wusstest?",
+  "Wofür bist du dir selbst in unserer Beziehung dankbar?",
+  "Welcher Mensch hat uns beiden besonders geholfen, und was wünschst du ihm?",
+  "Was gibt dir das Gefühl, bei mir zu Hause zu sein?"
+]);
+more("Mut & Tiefe", [
+  "Was würdest du tun, wenn du keine Angst hättest, mich zu enttäuschen?",
+  "Wann hast du zuletzt so getan, als wäre alles in Ordnung, obwohl es das nicht war?",
+  "Welche Erfahrung hat dich am meisten geprägt, und wie spüre ich ihre Spuren bei dir?",
+  "Wovon träumst du, das dir selbst fast zu groß vorkommt?",
+  "Welcher Teil von dir wünscht sich, noch mehr gesehen zu werden?",
+  "Wofür schämst du dich manchmal, obwohl du es nicht müsstest?",
+  "Wenn du eine Sache ändern könntest, die dich blockiert, was wäre es?",
+  "Was ist dir in Beziehungen wichtiger als alles andere?",
+  "Welche Frage hast du dich nie getraut, mir zu stellen?",
+  "Was würdest du dir an deinem 80. Geburtstag über uns wünschen?"
+]);
+
+/* ---------- Erweiterung: neue Themen mit anderem Spielgefühl ---------- */
+DATA["Wer von uns"] = [
+  "Wer von uns beiden hat sich in den ersten Wochen mehr verliebt?",
+  "Wer von uns beiden verzeiht schneller?",
+  "Wer von uns beiden braucht mehr Zeit für sich allein?",
+  "Wer von uns beiden zeigt Gefühle offener?",
+  "Wer von uns beiden macht sich mehr Sorgen um die Zukunft?",
+  "Wer von uns beiden würde den ersten Schritt nach einem Streit machen?",
+  "Wer von uns beiden ist romantischer, wenn niemand zuschaut?",
+  "Wer von uns beiden denkt öfter an den anderen, wenn wir getrennt sind?",
+  "Wer von uns beiden hat mehr Mut, Dinge auszusprechen?",
+  "Wer von uns beiden vergisst am ehesten, Danke zu sagen?",
+  "Wer von uns beiden fühlt sich im Alltag öfter allein gelassen?",
+  "Wer von uns beiden ist abends eher in Kuschelstimmung?",
+  "Wer von uns beiden hält sich für den größeren Dickkopf?",
+  "Wer von uns beiden würde für den anderen eher alles stehen und liegen lassen?",
+  "Wer von uns beiden hat bei Entscheidungen häufiger das letzte Wort – und ist das okay?",
+  "Wer von uns beiden hat die größere Angst, verlassen zu werden?"
+];
+DATA["Satz vervollständigen"] = [
+  "Vervollständige: „Ich fühle mich dir am nächsten, wenn …“",
+  "Vervollständige: „Was mir an uns manchmal Angst macht, ist …“",
+  "Vervollständige: „Ich wünschte, du wüsstest, wie sehr …“",
+  "Vervollständige: „Ich bin stolz auf uns, weil …“",
+  "Vervollständige: „Wenn ich ehrlich bin, brauche ich von dir mehr …“",
+  "Vervollständige: „Ich fühle mich von dir geliebt, wenn …“",
+  "Vervollständige: „Etwas, das ich dir längst sagen wollte, ist …“",
+  "Vervollständige: „Mit dir habe ich gelernt, dass …“",
+  "Vervollständige: „Ich werde nervös, wenn wir über … sprechen.“",
+  "Vervollständige: „Mein schönster Moment mit dir war, als …“",
+  "Vervollständige: „Ich vermisse an uns manchmal …“",
+  "Vervollständige: „Dein größtes Geschenk an mich ist …“",
+  "Vervollständige: „Ich möchte mit dir unbedingt noch …“",
+  "Vervollständige: „Wenn ich mich verletzlich fühle, hilft mir am meisten, wenn du …“"
+];
+DATA["Was wäre wenn"] = [
+  "Was wäre, wenn wir morgen alles hinter uns lassen und irgendwo neu anfangen könnten – wohin würdest du gehen?",
+  "Was wäre, wenn wir einen Monat nur für uns hätten – wie würden wir ihn verbringen?",
+  "Was wäre, wenn du eine Sache in unserer Geschichte ungeschehen machen könntest?",
+  "Was wäre, wenn wir uns heute zum ersten Mal begegnen würden – was würdest du anders machen?",
+  "Was wäre, wenn du für einen Tag meine Gedanken lesen könntest – was hättest du gern erfahren?",
+  "Was wäre, wenn wir nie wieder streiten dürften – wie würden wir stattdessen Konflikte lösen?",
+  "Was wäre, wenn wir ein Jahr ohne Handy zusammen verbringen würden?",
+  "Was wäre, wenn du mir einen Brief an mein früheres Ich schreiben dürftest – was stünde drin?",
+  "Was wäre, wenn wir morgen ein Kind bekämen oder bewusst keins – was würde sich für dich ändern?",
+  "Was wäre, wenn wir ein Haus bauen könnten – welches Zimmer wäre für dich das wichtigste?",
+  "Was wäre, wenn du eine Fähigkeit haben könntest, um mir zu helfen – welche wäre es?",
+  "Was wäre, wenn wir unseren Alltag komplett neu erfinden dürften – was würdest du als Erstes streichen?"
+];
+DATA["Gemeinsam tun"] = [
+  "Aufgabe: Schaut euch 60 Sekunden lang schweigend in die Augen. Danach: Was habt ihr gespürt?",
+  "Aufgabe: Sagt euch abwechselnd drei Dinge, die ihr aneinander schätzt, ohne Wiederholung.",
+  "Aufgabe: Erzählt euch, wie ihr den anderen heute eigentlich gesehen habt – in einem Satz.",
+  "Aufgabe: Nehmt euch zwei Minuten und haltet euch einfach nur fest, ohne zu reden.",
+  "Aufgabe: Schreibt jede*r eine Zeile auf, die ihr dem anderen morgen früh sagen wollt – und tauscht sie.",
+  "Aufgabe: Plant gemeinsam ein kleines Date in den nächsten sieben Tagen – ganz konkret mit Ort und Zeit.",
+  "Aufgabe: Erinnert euch gegenseitig an einen Moment, in dem ihr euch besonders nah wart.",
+  "Aufgabe: Nennt euch gegenseitig eine Sache, die der andere nächste Woche leichter machen könnte.",
+  "Aufgabe: Massiert euch abwechselnd eine Minute lang die Hände, ohne Worte.",
+  "Aufgabe: Erzählt euch von eurem Tag, aber nur von den Gefühlen, nicht von Fakten.",
+  "Aufgabe: Fragt euch gegenseitig: „Wie kann ich dich heute lieben?“ – und tut es.",
+  "Aufgabe: Tanzt zu einem Lied, das euch beiden etwas bedeutet."
+];
+DATA["Alltag & Werte"] = [
+  "Was bedeutet für dich ein gelungener Alltag zu zweit?",
+  "Wie viel Zeit mit Freunden, Familie oder Hobbys ist für dich in Ordnung, ohne dass wir uns fremd werden?",
+  "Welche Aufgaben im Haushalt oder im Leben fühlen sich für dich unfair verteilt an?",
+  "Wie wichtig sind dir gemeinsame Rituale – und welche vermisst du?",
+  "Wie gehen wir mit Geld um, und gibt es etwas, das dich dabei beschäftigt?",
+  "Welche Werte sollen unser Zusammenleben prägen, wenn es einmal schwierig wird?",
+  "Was sollten wir als Paar öfter tun, das wir gerade ständig aufschieben?",
+  "Wie viel Mitsprache wünschst du dir bei Entscheidungen, die mich betreffen?",
+  "Wie fühlst du dich mit der Art, wie wir Zeit miteinander verbringen?",
+  "Welche Grenzen setzt du dir selbst, um nicht auszubrennen, und kann ich dich dabei unterstützen?",
+  "Was bedeutet Treue für dich im Alltag, über das Offensichtliche hinaus?",
+  "Welche Rolle sollte Glaube, Sinn oder Spiritualität in unserem Leben spielen?"
+];
+DATA["Leicht & verspielt"] = [
+  "Was ist die albernste Eigenschaft von mir, die du liebst?",
+  "Welcher Spitzname für mich ist dein liebster, und welchen würdest du gern neu erfinden?",
+  "Welche gemeinsame Gewohnheit ist so typisch für uns, dass sie niemand sonst verstehen würde?",
+  "Was würdest du an einem freien Tag am liebsten mit mir tun – ohne Plan?",
+  "Welche Serie, welcher Film oder welches Lied hat unsere Beziehung begleitet?",
+  "Was ist das Mutigste, das du je für mich getan hast?",
+  "Wenn wir ein Paar aus einem Film wären – welches und warum?",
+  "Was ist dein liebstes Essen, das wir gemeinsam kochen oder genießen?",
+  "Welche verrückte Idee sollten wir unbedingt einmal ausprobieren?",
+  "Wann haben wir zuletzt Tränen gelacht?",
+  "Was an meinem Alltag macht dich zum Schmunzeln, ohne dass ich es weiß?",
+  "Wenn ich ein Tier wäre, welches wäre ich für dich – und wieso?"
+];
+DATA["Körper & Sinne"] = [
+  "Welcher Duft erinnert dich an mich?",
+  "Wann fühlst du dich in deinem Körper am wohlsten, wenn ich dabei bin?",
+  "Welche Stelle an dir wünschst du dir, dass ich sie öfter berühre?",
+  "Wie wichtig ist dir, wie ich dich ansehe, wenn wir einander gegenüberstehen?",
+  "Was an meiner Stimme beruhigt dich?",
+  "Welcher Moment mit mir hat dir Gänsehaut bereitet?",
+  "Wie fühlst du dich, wenn wir uns ohne Eile umarmen?",
+  "Welche Art von Massage, Berührung oder Nähe wünschst du dir gerade am meisten?",
+  "Was an mir ist dein liebster Anblick, wenn ich gar nichts Besonderes tue?",
+  "Wie fühlt sich für dich ein richtig langer Kuss an?"
+];
+DATA["Mut zur Wahrheit"] = [
+  "Was verheimlichst du mir aus Angst, mich zu verletzen?",
+  "Gab es einen Moment, in dem du an uns gezweifelt hast? Wann?",
+  "Wovor möchtest du dich bei mir nicht verteidigen müssen?",
+  "Was hast du schon lange gedacht, aber nie gesagt?",
+  "Was hätte ich in einer schwierigen Zeit besser machen können?",
+  "Wo bist du in unserer Beziehung nicht ganz du selbst?",
+  "Was würdest du an mir verändern, wenn du es dürftest – und willst du es wirklich?",
+  "Was musst du loslassen, damit wir freier lieben können?",
+  "Welcher Konflikt von früher wirkt immer noch in dir nach?",
+  "Welche Frage würdest du mir stellen, wenn du keine Angst vor der Antwort hättest?",
+  "Was erwartest du von mir, ohne es auszusprechen?",
+  "Gibt es etwas, bei dem du dir wünschst, wir würden ehrlicher sein?"
+];
+
+/* ---------- State ---------- */
+var CATS = Object.keys(DATA);
+var ALL = [];
+CATS.forEach(function(c){ DATA[c].forEach(function(t){ ALL.push({c:c,t:t}); }); });
+var K = "ehrlich.v1";
+var S = load();
+function load(){
+  try{ var s = JSON.parse(localStorage.getItem(K)); if(s && typeof s==="object") return s; }catch(e){}
+  return {};
+}
+function save(){ try{ localStorage.setItem(K, JSON.stringify(S)); }catch(e){} }
+S.filter = S.filter || "Alle";
+S.used = S.used || {};      // text -> true
+S.hist = S.hist || [];      // texts
+S.favs = S.favs || [];      // texts
+S.names = S.names || ["",""];
+S.turn = S.turn || 0;
+var pos = S.hist.length - 1;
+
+/* ---------- Helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function find(t){ for(var i=0;i<ALL.length;i++) if(ALL[i].t===t) return ALL[i]; return null; }
+function pool(){
+  return ALL.filter(function(x){ return S.filter==="Alle" || x.c===S.filter; });
+}
+function name(i){ return (S.names[i]||"").trim() || (i===0?"Person 1":"Person 2"); }
+
+/* ---------- Render ---------- */
+function renderChips(){
+  var box = $("chips"); box.innerHTML = "";
+  ["Alle"].concat(CATS).forEach(function(c){
+    var b = document.createElement("button");
+    b.className = "chip" + (S.filter===c ? " on":""); b.textContent = c;
+    b.onclick = function(){ S.filter = c; save(); renderChips(); renderMeta(); };
+    box.appendChild(b);
+  });
+}
+function renderMeta(){
+  var p = pool(), left = p.filter(function(x){ return !S.used[x.t]; }).length;
+  $("meta").textContent = left + " von " + p.length + " Fragen noch offen";
+  var hasNames = (S.names[0]||"").trim() || (S.names[1]||"").trim();
+  $("turn").innerHTML = (S.hist.length && hasNames)
+    ? "<b>" + esc(name(S.turn)) + "</b> antwortet – " + esc(name(1-S.turn)) + " stellt die Frage"
+    : (S.hist.length ? "Eine*r fragt, der*die andere antwortet" : "");
+}
+function esc(s){ return s.replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+function showQ(item, animate){
+  $("cat").textContent = item.c;
+  var q = $("q"); q.textContent = item.t;
+  q.classList.remove("pop"); if(animate){ void q.offsetWidth; q.classList.add("pop"); }
+  var f = S.favs.indexOf(item.t) > -1;
+  $("fav").textContent = f ? "♥" : "♡"; $("fav").classList.toggle("on", f);
+  $("back").style.opacity = pos>0 ? 1 : .4;
+}
+function renderFavs(){
+  var ul = $("favList"); ul.innerHTML = "";
+  $("favCount").textContent = S.favs.length ? "(" + S.favs.length + ")" : "";
+  if(!S.favs.length){ var d=document.createElement("div"); d.className="empty"; d.textContent="Noch keine Favoriten – tippt auf das Herz an einer Frage."; ul.appendChild(d); return; }
+  S.favs.forEach(function(t){
+    var it = find(t); if(!it) return;
+    var li = document.createElement("li");
+    li.innerHTML = "<small>"+esc(it.c)+"</small>"+esc(it.t);
+    li.onclick = function(){ S.hist.push(t); pos = S.hist.length-1; save(); showQ(it,true); window.scrollTo({top:0,behavior:"smooth"}); };
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- Actions ---------- */
+function nextQ(){
+  var p = pool();
+  var avail = p.filter(function(x){ return !S.used[x.t]; });
+  if(!avail.length){
+    p.forEach(function(x){ delete S.used[x.t]; });
+    avail = p.slice();
+  }
+  var last = S.hist[S.hist.length-1];
+  var cand = avail.length>1 ? avail.filter(function(x){ return x.t!==last; }) : avail;
+  var pick = cand[Math.floor(Math.random()*cand.length)];
+  S.used[pick.t] = true;
+  S.hist.push(pick.t); if(S.hist.length>200) S.hist.shift();
+  pos = S.hist.length-1;
+  S.turn = 1 - S.turn;
+  save(); showQ(pick,true); renderMeta();
+  if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
+}
+$("next").onclick = nextQ;
+$("skip").onclick = nextQ;
+$("back").onclick = function(){
+  if(pos>0){ pos--; var it = find(S.hist[pos]); if(it) showQ(it,true); }
+};
+$("fav").onclick = function(){
+  var t = S.hist[pos]; if(!t) return;
+  var i = S.favs.indexOf(t);
+  if(i>-1) S.favs.splice(i,1); else S.favs.push(t);
+  save(); showQ(find(t),false); renderFavs();
+};
+$("reset").onclick = function(){
+  S.used = {}; save(); renderMeta();
+  $("reset").textContent = "Neu gemischt ✓";
+  setTimeout(function(){ $("reset").textContent = "Fragen-Stapel neu mischen"; },1600);
+};
+["n1","n2"].forEach(function(id,i){
+  var el = $(id); el.value = S.names[i]||"";
+  el.oninput = function(){ S.names[i] = el.value; save(); renderMeta(); };
+});
+
+/* ---------- Init ---------- */
+renderChips(); renderMeta(); renderFavs();
+if(pos>=0){ var cur = find(S.hist[pos]); if(cur) showQ(cur,false); }
+else $("back").style.opacity = .4;
+
+/* ---------- PWA: Icon + Manifest zur Laufzeit (Single-File) ---------- */
+try{
+  var c = document.createElement("canvas"); c.width = c.height = 180;
+  var x = c.getContext("2d");
+  var g = x.createLinearGradient(0,0,180,180); g.addColorStop(0,"#3a1b3f"); g.addColorStop(1,"#1b1226");
+  x.fillStyle = g; x.fillRect(0,0,180,180);
+  x.font = "100px serif"; x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillStyle = "#ff7a8a"; x.fillText("♥",90,96);
+  var png = c.toDataURL("image/png");
+  $("touchIcon").href = png;
+
+  var c2 = document.createElement("canvas"); c2.width = c2.height = 512;
+  var y = c2.getContext("2d");
+  var g2 = y.createLinearGradient(0,0,512,512); g2.addColorStop(0,"#3a1b3f"); g2.addColorStop(1,"#1b1226");
+  y.fillStyle = g2; y.fillRect(0,0,512,512);
+  y.font = "280px serif"; y.textAlign = "center"; y.textBaseline = "middle";
+  y.fillStyle = "#ff7a8a"; y.fillText("♥",256,270);
+  var big = c2.toDataURL("image/png");
+
+  var base = location.href.split("#")[0].split("?")[0];
+  var manifest = {
+    name:"Ehrlich zu zweit", short_name:"Ehrlich", lang:"de",
+    start_url: base, scope: base.replace(/[^\/]*$/,""),
+    display:"standalone", orientation:"portrait",
+    background_color:"#1b1226", theme_color:"#1b1226",
+    icons:[{src:big,sizes:"512x512",type:"image/png",purpose:"any"}]
+  };
+  var blob = new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+  $("manifestLink").href = URL.createObjectURL(blob);
+}catch(e){}
+})();
+</script>
+</body>
+</html>
